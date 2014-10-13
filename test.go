@@ -18,8 +18,8 @@ func (t *Test) Run() {
 	if err != nil && t.fatal {
 		panic(err)
 	} else if err != nil {
-		t.parent_suite.fail("Test %s FAIL\nDuration: %f sec\n", t.name, dur)
+		t.parent_suite.fail("Test %s FAIL\nDuration: %.3f sec\n", t.name, dur)
 	} else {
-		t.parent_suite.pass("Test %s PASS\nDuration: %f sec\n", t.name, dur)
+		t.parent_suite.pass("Test %s PASS\nDuration: %.3f sec\n", t.name, dur)
 	}
 }
