@@ -8,8 +8,8 @@ var allTestSuites []*TestSuite
 
 type TestSuite struct {
 	Name       string
-	setup      func() error
-	teardown   func() error
+	setup      func(*TestSuite) error
+	teardown   func(*TestSuite) error
 	tests      []*Test
 	vars       map[string]interface{}
 	num_passed int
@@ -19,21 +19,21 @@ type TestSuite struct {
 
 func DefTestSuite(name string) *TestSuite {
 	ts := &TestSuite{
-		Name:     name,
-		tests:    []*Test{},
-		vars:     map[string]interface{}{},
-		setup:    func() error { return nil },
-		teardown: func() error { return nil },
+		Name:  name,
+		tests: []*Test{},
+		vars:  map[string]interface{}{},
 	}
+	ts.setup = func(ts *TestSuite) error { return nil }
+	ts.teardown = func(ts *TestSuite) error { return nil }
 	allTestSuites = append(allTestSuites, ts)
 	return ts
 }
 
-func (tt *TestSuite) SetSetup(setup_func func() error) {
+func (tt *TestSuite) SetSetup(setup_func func(*TestSuite) error) {
 	tt.setup = setup_func
 }
 
-func (tt *TestSuite) SetTearDown(teardown_func func() error) {
+func (tt *TestSuite) SetTearDown(teardown_func func(*TestSuite) error) {
 	tt.teardown = teardown_func
 }
 
@@ -49,7 +49,7 @@ func (tt *TestSuite) DefTest(name string, test_func func(*TestSuite) error, fata
 }
 
 func (tt *TestSuite) Run() error {
-	if setup_err := tt.setup(); setup_err != nil {
+	if setup_err := tt.setup(tt); setup_err != nil {
 		return fmt.Errorf("Error during %s setup: %v\n", tt.Name, setup_err)
 	}
 	defer func() {
@@ -60,7 +60,7 @@ func (tt *TestSuite) Run() error {
 	for _, t := range tt.tests {
 		t.Run()
 	}
-	if teardown_err := tt.teardown(); teardown_err != nil {
+	if teardown_err := tt.teardown(tt); teardown_err != nil {
 		return fmt.Errorf("Error durring %s teardown: %v\n", tt.Name, teardown_err)
 	}
 	tt.PrintResults()
