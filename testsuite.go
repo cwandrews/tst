@@ -2,6 +2,7 @@ package tst
 
 import (
 	"fmt"
+	"strings"
 )
 
 var allTestSuites []*TestSuite
@@ -54,7 +55,15 @@ func (tt *TestSuite) Run() error {
 	}
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Printf("RECOVER: %+v\n", r)
+			if rerr, isErr := r.(error); isErr && strings.HasPrefix(rerr.Error(), "TST FATAL ERROR") {
+				tt.fail("Fatal test failed: %v will attempt to tear down\n", r)
+				if teardown_err := tt.teardown(tt); teardown_err != nil {
+					fmt.Printf("Error durring %s teardown: %v\n", tt.Name, teardown_err)
+				}
+				tt.PrintResults()
+			} else {
+				panic(r)
+			}
 		}
 	}()
 	for _, t := range tt.tests {
@@ -71,7 +80,7 @@ func (tt *TestSuite) PrintResults() {
 	if tt.num_passed == tt.num_tests {
 		Pass("=========================================\n100%% of %s tests passed\n%d passes\n%d failures\n", tt.Name, tt.num_passed, tt.num_failed)
 	} else {
-		Fail("=========================================\n%.2f%% of %s tests passed\n%d passes\n%d failures\n", (float64(tt.num_passed)/float64(tt.num_passed))*100, tt.Name, tt.num_passed, tt.num_failed)
+		Fail("=========================================\n%.2f%% of %s tests passed\n%d passes\n%d failures\n", (float64(tt.num_passed)/float64(tt.num_tests))*100, tt.Name, tt.num_passed, tt.num_failed)
 	}
 }
 
@@ -96,4 +105,13 @@ func (tt *TestSuite) SetVar(key string, val interface{}) {
 func (tt *TestSuite) Varp(key string) bool {
 	_, ok := tt.vars[key]
 	return ok
+}
+
+func (tt *TestSuite) ErrorCheck(name string, err error) {
+	tt.num_tests++
+	if err != nil {
+		tt.fail("Error check %s FAIL\n%v\n", name, err)
+	} else {
+		tt.pass("Error check %s PASS\n", name)
+	}
 }

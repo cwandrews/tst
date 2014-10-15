@@ -1,6 +1,7 @@
 package tst
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -16,9 +17,9 @@ func (t *Test) Run() {
 	err := t.test_func(t.parent_suite)
 	dur := time.Since(start).Seconds()
 	if err != nil && t.fatal {
-		panic(err)
+		panic(fmt.Errorf("TST FATAL ERROR: %v\n", err))
 	} else if err != nil {
-		t.parent_suite.fail("Test %s FAIL\nDuration: %.3f sec\n", t.name, dur)
+		t.parent_suite.fail("Test %s FAIL\n%v\nDuration: %.3f sec\n", t.name, err, dur)
 	} else {
 		t.parent_suite.pass("Test %s PASS\nDuration: %.3f sec\n", t.name, dur)
 	}
