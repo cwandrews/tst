@@ -78,9 +78,9 @@ func (tt *TestSuite) Run() error {
 
 func (tt *TestSuite) PrintResults() {
 	if tt.num_passed == tt.num_tests {
-		Pass("=========================================\n100%% of %s tests passed\n%d passes\n%d failures\n", tt.Name, tt.num_passed, tt.num_failed)
+		Pass("=========================================\n100%% of %s tests passed\n%d passes\n%d failures\n=========================================\n", tt.Name, tt.num_passed, tt.num_failed)
 	} else {
-		Fail("=========================================\n%.2f%% of %s tests passed\n%d passes\n%d failures\n", (float64(tt.num_passed)/float64(tt.num_tests))*100, tt.Name, tt.num_passed, tt.num_failed)
+		Fail("=========================================\n%.2f%% of %s tests passed\n%d passes\n%d failures\n=========================================\n", (float64(tt.num_passed)/float64(tt.num_tests))*100, tt.Name, tt.num_passed, tt.num_failed)
 	}
 }
 
@@ -90,6 +90,7 @@ func (tt *TestSuite) pass(s string, stuff ...interface{}) {
 }
 
 func (tt *TestSuite) fail(s string, stuff ...interface{}) {
+	failures++
 	tt.num_failed++
 	Fail(s, stuff...)
 }
